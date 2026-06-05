@@ -85,7 +85,7 @@ export default function App() {
       {/* Preview bar */}
       <div className="preview-bar">
         <button className="nav-arrow" onClick={goPrev} aria-label="Previous">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none" style={{ transform: 'scaleX(-1)' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32" fill="none" style={{ transform: 'scaleX(-1)' }}>
             <g clipPath="url(#clipPrev)">
               <path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor" strokeWidth="1.2" strokeMiterlimit="10"/>
               <path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor" strokeWidth="1.2" strokeMiterlimit="10"/>
@@ -114,7 +114,7 @@ export default function App() {
         </div>
 
         <button className="nav-arrow" onClick={goNext} aria-label="Next">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32" fill="none">
             <g clipPath="url(#clipNext)">
               <path d="M31.7261 15.9148C25.2964 15.9148 20.0781 10.5769 20.0781 3.99988" stroke="currentColor" strokeWidth="1.2" strokeMiterlimit="10"/>
               <path d="M31.7261 15.9149C25.2964 15.9149 20.0781 21.2528 20.0781 27.8298" stroke="currentColor" strokeWidth="1.2" strokeMiterlimit="10"/>
@@ -132,7 +132,7 @@ export default function App() {
       {/* Credits */}
       <div className="credits">
         <a href="https://sebas-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className="credit-btn">
-          <span>⭐</span> Creado por Sebastián Vasquez
+          ✨ Creado por Sebastián Vasquez
         </a>
         <a href="https://github.com/sebastianvasquezechavarria1234/gallery-slider" target="_blank" rel="noopener noreferrer" className="credit-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
