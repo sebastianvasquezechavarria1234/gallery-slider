@@ -41,8 +41,8 @@ html, body, #app {
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 20%,
-    rgba(0, 0, 0, 0.65) 100%
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.75) 100%
   );
 }
 
@@ -54,8 +54,8 @@ html, body, #app {
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 25%,
-    rgba(0, 0, 0, 0.6) 100%
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.7) 100%
   );
 }
 
