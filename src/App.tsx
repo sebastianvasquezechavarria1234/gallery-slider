@@ -135,12 +135,7 @@ export default function App() {
           ✨ Created by Sebastián Vasquez
         </a>
         <a href="https://github.com/sebastianvasquezechavarria1234/gallery-slider" target="_blank" rel="noopener noreferrer" className="credit-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10H4V5z"/>
-            <path d="M2 17h20"/>
-            <path d="M6 20h12"/>
-          </svg>
-          View source code
+          💻 View source code
         </a>
       </div>
     </div>
