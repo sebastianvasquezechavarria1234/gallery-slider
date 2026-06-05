@@ -73,6 +73,7 @@ html, body, #app {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 56px;
 }
 
 /* ─── Nav arrows ─── */
@@ -81,7 +82,7 @@ html, body, #app {
   align-items: center;
   justify-content: center;
   width: 32px;
-  height: 32px;
+  height: 100%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.06);
@@ -106,7 +107,7 @@ html, body, #app {
 .preview-card {
   position: relative;
   width: 64px;
-  height: 42px;
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid transparent;
@@ -156,36 +157,33 @@ html, body, #app {
   left: 1.5rem;
   z-index: 30;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
 }
 
 .credit-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.75);
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
   font-style: italic;
-  text-decoration: none;
-  text-underline-offset: 3px;
   text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, text-decoration-color 0.3s ease;
   white-space: nowrap;
   font-family: 'Georgia', serif;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .credit-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  text-decoration-color: rgba(255, 255, 255, 0.6);
+  text-decoration-color: rgba(255, 255, 255, 0.7);
 }
 
 .credit-btn span,

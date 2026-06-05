@@ -9,7 +9,6 @@ const SLIDES = [
 ]
 
 const SLIDE_DURATION = 5000
-const TRANSITION_DURATION = 1.4
 const DRAG_THRESHOLD = 60
 
 export default function App() {
@@ -40,31 +39,22 @@ export default function App() {
     })
 
     // Reset incoming
-    gsap.set(inEl, {
-      opacity: 0,
-      scale: 1,
-      filter: 'blur(0px)',
-    })
+    gsap.set(inEl, { opacity: 1, filter: 'blur(20px)' })
 
-    // Outgoing: scale up + blur + fade
+    // Blur transition: outgoing clears, incoming blurs in
     tl.to(outEl, {
-      duration: TRANSITION_DURATION,
-      scale: 1.3,
+      duration: 0.6,
       filter: 'blur(20px)',
-      opacity: 0,
-      ease: 'power2.inOut',
+      ease: 'power2.in',
     })
 
-    // Incoming: fade in
-    tl.to(
-      inEl,
-      {
-        duration: TRANSITION_DURATION * 0.7,
-        opacity: 1,
-        ease: 'power2.out',
-      },
-      `-=${TRANSITION_DURATION * 0.5}`
-    )
+    tl.set(outEl, { filter: 'blur(20px)' }, '<')
+
+    tl.to(inEl, {
+      duration: 0.6,
+      filter: 'blur(0px)',
+      ease: 'power2.out',
+    }, '-=0.3')
   }, [current])
 
   const goNext = useCallback(() => {
@@ -104,10 +94,8 @@ export default function App() {
 
     const progress = dx / window.innerWidth
     gsap.set(el, {
-      x: `${progress * 60}%`,
-      scale: 1 + Math.abs(progress) * 0.3,
-      filter: `blur(${Math.abs(progress) * 20}px)`,
-      opacity: 1 - Math.abs(progress) * 0.6,
+      x: `${progress * 40}%`,
+      filter: `blur(${Math.abs(progress) * 12}px)`,
     })
   }, [])
 
@@ -204,7 +192,7 @@ export default function App() {
 
       {/* Credits */}
       <div className="credits">
-        <a href="#" className="credit-btn">
+        <a href="https://sebas-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className="credit-btn">
           <span>⭐</span> Creado por Sebastián Vasquez
         </a>
         <a href="https://github.com/sebastianvasquezechavarria1234/gallery-slider" target="_blank" rel="noopener noreferrer" className="credit-btn">
