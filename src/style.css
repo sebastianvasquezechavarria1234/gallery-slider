@@ -36,6 +36,18 @@ html, body, #app {
   will-change: transform;
 }
 
+/* ─── Radial gradient overlay for dark edges ─── */
+.slide-gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
 /* ─── Ken Burns ─── */
 .kb-left img  { animation: kenBurnsLeft  7s ease-in-out infinite alternate; }
 .kb-right img { animation: kenBurnsRight 7s ease-in-out infinite alternate; }
@@ -81,7 +93,7 @@ html, body, #app {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 44px;
   height: 100%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);

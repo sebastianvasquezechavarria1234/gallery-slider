@@ -16,6 +16,7 @@ export default function App() {
   const isTransitioning = useRef(false)
   const outRef = useRef<HTMLDivElement>(null)
   const inRef = useRef<HTMLDivElement>(null)
+  const inImgRef = useRef<HTMLImageElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const dragStart = useRef<{ x: number; y: number } | null>(null)
@@ -28,33 +29,37 @@ export default function App() {
 
     const outEl = outRef.current
     const inEl = inRef.current
-    if (!outEl || !inEl) return
+    const inImg = inImgRef.current
+    if (!outEl || !inEl || !inImg) return
 
-    const tl = gsap.timeline({
+    // Set the incoming image BEFORE animation starts
+    inImg.src = SLIDES[index].src
+
+    // Reset incoming position off-screen right
+    gsap.set(inEl, { x: '100%' })
+
+    // Slide out current
+    gsap.to(outEl, {
+      duration: 0.45,
+      x: '-100%',
+      ease: 'power3.inOut',
+    })
+
+    // Slide in next
+    gsap.to(inEl, {
+      duration: 0.45,
+      x: '0%',
+      ease: 'power3.inOut',
       onComplete: () => {
+        // Swap: incoming becomes the new current
+        gsap.set(outEl, { x: '0%' })
+        outEl.querySelector('img')!.src = SLIDES[index].src
+        outEl.className = `slider-slide ${SLIDES[index].kenBurns}`
+        gsap.set(inEl, { x: '100%' })
         setCurrent(index)
-        gsap.set(outEl, { clearProps: 'all' })
         isTransitioning.current = false
       },
     })
-
-    // Reset incoming
-    gsap.set(inEl, { opacity: 1, filter: 'blur(20px)' })
-
-    // Blur transition: outgoing clears, incoming blurs in
-    tl.to(outEl, {
-      duration: 0.6,
-      filter: 'blur(20px)',
-      ease: 'power2.in',
-    })
-
-    tl.set(outEl, { filter: 'blur(20px)' }, '<')
-
-    tl.to(inEl, {
-      duration: 0.6,
-      filter: 'blur(0px)',
-      ease: 'power2.out',
-    }, '-=0.3')
   }, [current])
 
   const goNext = useCallback(() => {
@@ -93,10 +98,7 @@ export default function App() {
     if (!el) return
 
     const progress = dx / window.innerWidth
-    gsap.set(el, {
-      x: `${progress * 40}%`,
-      filter: `blur(${Math.abs(progress) * 12}px)`,
-    })
+    gsap.set(el, { x: `${progress * 40}%` })
   }, [])
 
   const onPointerUp = useCallback(
@@ -108,11 +110,8 @@ export default function App() {
       const el = outRef.current
       if (el && !isTransitioning.current) {
         gsap.to(el, {
-          duration: 0.5,
+          duration: 0.3,
           x: '0%',
-          scale: 1,
-          filter: 'blur(0px)',
-          opacity: 1,
           ease: 'power2.out',
         })
       }
@@ -143,6 +142,7 @@ export default function App() {
         className={`slider-slide ${SLIDES[current].kenBurns}`}
       >
         <img src={SLIDES[current].src} alt="" draggable={false} />
+        <div className="slide-gradient" />
       </div>
 
       {/* Incoming slide */}
@@ -151,11 +151,8 @@ export default function App() {
         className="slider-slide"
         style={{ pointerEvents: 'none' }}
       >
-        <img
-          src={SLIDES[(current + 1) % SLIDES.length].src}
-          alt=""
-          draggable={false}
-        />
+        <img ref={inImgRef} src={SLIDES[0].src} alt="" draggable={false} />
+        <div className="slide-gradient" />
       </div>
 
       {/* Vignette */}
