@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import gsap from 'gsap'
 
 const SLIDES = [
-  { src: '/slider-1.webp', kenBurns: 'kb-left' },
-  { src: '/slider-2.webp', kenBurns: 'kb-right' },
-  { src: '/slider-3.webp', kenBurns: 'kb-up' },
-  { src: '/slider-4.webp', kenBurns: 'kb-down' },
+  '/slider-1.webp',
+  '/slider-2.webp',
+  '/slider-3.webp',
+  '/slider-4.webp',
 ]
 
 const SLIDE_DURATION = 5000
@@ -14,61 +14,61 @@ const DRAG_THRESHOLD = 60
 export default function App() {
   const [current, setCurrent] = useState(0)
   const isTransitioning = useRef(false)
-  const outRef = useRef<HTMLDivElement>(null)
-  const inRef = useRef<HTMLDivElement>(null)
-  const inImgRef = useRef<HTMLImageElement>(null)
+  const currentRef = useRef<HTMLDivElement>(null)
+  const nextRef = useRef<HTMLDivElement>(null)
+  const nextImgRef = useRef<HTMLImageElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const dragStart = useRef<{ x: number; y: number } | null>(null)
   const isDragging = useRef(false)
+  const dragDirection = useRef<1 | -1>(1)
 
-  const goTo = useCallback((index: number) => {
-    if (isTransitioning.current || index === current) return
+  const transition = useCallback((targetIndex: number) => {
+    if (isTransitioning.current || targetIndex === current) return
     isTransitioning.current = true
     clearTimeout(timerRef.current)
 
-    const outEl = outRef.current
-    const inEl = inRef.current
-    const inImg = inImgRef.current
-    if (!outEl || !inEl || !inImg) return
+    const curEl = currentRef.current
+    const nxtEl = nextRef.current
+    const nxtImg = nextImgRef.current
+    if (!curEl || !nxtEl || !nxtImg) return
 
-    // Set the incoming image BEFORE animation starts
-    inImg.src = SLIDES[index].src
+    // Set next image
+    nxtImg.src = SLIDES[targetIndex]
 
-    // Reset incoming position off-screen right
-    gsap.set(inEl, { x: '100%' })
+    const direction = targetIndex > current ? -1 : 1
 
-    // Slide out current
-    gsap.to(outEl, {
-      duration: 0.45,
-      x: '-100%',
+    // Position incoming off-screen
+    gsap.set(nxtEl, { x: `${-direction * 100}%` })
+
+    // Slide both
+    gsap.to(curEl, {
+      duration: 0.5,
+      x: `${direction * 100}%`,
       ease: 'power3.inOut',
     })
 
-    // Slide in next
-    gsap.to(inEl, {
-      duration: 0.45,
+    gsap.to(nxtEl, {
+      duration: 0.5,
       x: '0%',
       ease: 'power3.inOut',
       onComplete: () => {
-        // Swap: incoming becomes the new current
-        gsap.set(outEl, { x: '0%' })
-        outEl.querySelector('img')!.src = SLIDES[index].src
-        outEl.className = `slider-slide ${SLIDES[index].kenBurns}`
-        gsap.set(inEl, { x: '100%' })
-        setCurrent(index)
+        curEl.querySelector('img')!.src = SLIDES[targetIndex]
+        gsap.set(curEl, { x: '0%' })
+        gsap.set(nxtEl, { x: `${-direction * 100}%` })
+        setCurrent(targetIndex)
         isTransitioning.current = false
       },
     })
   }, [current])
 
   const goNext = useCallback(() => {
-    goTo((current + 1) % SLIDES.length)
-  }, [current, goTo])
+    transition((current + 1) % SLIDES.length)
+  }, [current, transition])
 
   const goPrev = useCallback(() => {
-    goTo((current - 1 + SLIDES.length) % SLIDES.length)
-  }, [current, goTo])
+    transition((current - 1 + SLIDES.length) % SLIDES.length)
+  }, [current, transition])
 
   // Auto-play
   useEffect(() => {
@@ -91,15 +91,30 @@ export default function App() {
 
     if (!isDragging.current && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5) {
       isDragging.current = true
+      dragDirection.current = dx < 0 ? -1 : 1
+
+      // Set the next image for drag preview
+      const nxtImg = nextImgRef.current
+      const nxtEl = nextRef.current
+      if (nxtImg && nxtEl) {
+        const targetIdx = dragDirection.current === -1
+          ? (current + 1) % SLIDES.length
+          : (current - 1 + SLIDES.length) % SLIDES.length
+        nxtImg.src = SLIDES[targetIdx]
+        gsap.set(nxtEl, { x: `${-dragDirection.current * 100}%` })
+      }
     }
     if (!isDragging.current) return
 
-    const el = outRef.current
-    if (!el) return
+    const curEl = currentRef.current
+    const nxtEl = nextRef.current
+    if (!curEl || !nxtEl) return
 
     const progress = dx / window.innerWidth
-    gsap.set(el, { x: `${progress * 40}%` })
-  }, [])
+
+    gsap.set(curEl, { x: `${progress * 60}%` })
+    gsap.set(nxtEl, { x: `${(-dragDirection.current * 100) + (progress * 60 * -dragDirection.current)}%` })
+  }, [current])
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent) => {
@@ -107,24 +122,29 @@ export default function App() {
       const dx = e.clientX - dragStart.current.x
       dragStart.current = null
 
-      const el = outRef.current
-      if (el && !isTransitioning.current) {
-        gsap.to(el, {
-          duration: 0.3,
-          x: '0%',
-          ease: 'power2.out',
-        })
-      }
-
-      if (!isDragging.current || Math.abs(dx) < DRAG_THRESHOLD) {
+      if (!isDragging.current) {
         isDragging.current = false
         return
       }
       isDragging.current = false
 
-      dx < 0 ? goNext() : goPrev()
+      const curEl = currentRef.current
+      const nxtEl = nextRef.current
+
+      if (Math.abs(dx) < DRAG_THRESHOLD) {
+        // Snap back
+        if (curEl) gsap.to(curEl, { duration: 0.3, x: '0%', ease: 'power2.out' })
+        if (nxtEl) gsap.to(nxtEl, { duration: 0.3, x: `${-dragDirection.current * 100}%`, ease: 'power2.out' })
+        return
+      }
+
+      // Commit transition
+      const targetIdx = dx < 0
+        ? (current + 1) % SLIDES.length
+        : (current - 1 + SLIDES.length) % SLIDES.length
+      transition(targetIdx)
     },
-    [goNext, goPrev]
+    [current, transition]
   )
 
   return (
@@ -136,22 +156,15 @@ export default function App() {
       onPointerCancel={onPointerUp}
       style={{ touchAction: 'none', cursor: 'grab' }}
     >
-      {/* Active slide */}
-      <div
-        ref={outRef}
-        className={`slider-slide ${SLIDES[current].kenBurns}`}
-      >
-        <img src={SLIDES[current].src} alt="" draggable={false} />
+      {/* Current slide */}
+      <div ref={currentRef} className="slider-slide">
+        <img src={SLIDES[current]} alt="" draggable={false} />
         <div className="slide-gradient" />
       </div>
 
-      {/* Incoming slide */}
-      <div
-        ref={inRef}
-        className="slider-slide"
-        style={{ pointerEvents: 'none' }}
-      >
-        <img ref={inImgRef} src={SLIDES[0].src} alt="" draggable={false} />
+      {/* Next slide (for transitions + drag) */}
+      <div ref={nextRef} className="slider-slide" style={{ pointerEvents: 'none' }}>
+        <img ref={nextImgRef} src={SLIDES[0]} alt="" draggable={false} />
         <div className="slide-gradient" />
       </div>
 
@@ -167,14 +180,14 @@ export default function App() {
         </button>
 
         <div className="preview-cards">
-          {SLIDES.map((slide, i) => (
+          {SLIDES.map((src, i) => (
             <button
               key={i}
               className={`preview-card ${i === current ? 'active' : ''}`}
-              onClick={() => goTo(i)}
+              onClick={() => transition(i)}
               aria-label={`Slide ${i + 1}`}
             >
-              <img src={slide.src} alt="" draggable={false} />
+              <img src={src} alt="" draggable={false} />
               <span className="preview-number">{String(i + 1).padStart(2, '0')}</span>
             </button>
           ))}

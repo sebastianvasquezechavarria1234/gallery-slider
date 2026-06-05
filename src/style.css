@@ -26,33 +26,25 @@ html, body, #app {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  will-change: transform, filter, opacity;
 }
 
 .slider-slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  will-change: transform;
 }
 
-/* ─── Radial gradient overlay for dark edges ─── */
+/* ─── Dark radial gradient overlay ─── */
 .slide-gradient {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 40%,
-    rgba(0, 0, 0, 0.5) 100%
+    transparent 20%,
+    rgba(0, 0, 0, 0.65) 100%
   );
 }
-
-/* ─── Ken Burns ─── */
-.kb-left img  { animation: kenBurnsLeft  7s ease-in-out infinite alternate; }
-.kb-right img { animation: kenBurnsRight 7s ease-in-out infinite alternate; }
-.kb-up img    { animation: kenBurnsUp    7s ease-in-out infinite alternate; }
-.kb-down img  { animation: kenBurnsDown  7s ease-in-out infinite alternate; }
 
 /* ─── Vignette ─── */
 .vignette {
@@ -62,8 +54,8 @@ html, body, #app {
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 30%,
-    rgba(0, 0, 0, 0.55) 100%
+    transparent 25%,
+    rgba(0, 0, 0, 0.6) 100%
   );
 }
 
@@ -201,28 +193,4 @@ html, body, #app {
 .credit-btn span,
 .credit-btn svg {
   flex-shrink: 0;
-}
-
-/* ═══════════════════════════════════
-   KEYFRAMES — Ken Burns
-   ═══════════════════════════════════ */
-
-@keyframes kenBurnsLeft {
-  0%   { transform: scale(1.03) translate(0, 0); }
-  100% { transform: scale(1.08) translate(-2%, -0.5%); }
-}
-
-@keyframes kenBurnsRight {
-  0%   { transform: scale(1.03) translate(0, 0); }
-  100% { transform: scale(1.08) translate(2%, 0.5%); }
-}
-
-@keyframes kenBurnsUp {
-  0%   { transform: scale(1.03) translate(0, 0); }
-  100% { transform: scale(1.08) translate(0.5%, -2%); }
-}
-
-@keyframes kenBurnsDown {
-  0%   { transform: scale(1.03) translate(0, 0); }
-  100% { transform: scale(1.08) translate(-0.5%, 2%); }
 }
