@@ -132,15 +132,15 @@ export default function App() {
       {/* Credits */}
       <div className="credits">
         <a href="https://sebas-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className="credit-btn">
-          ✨ Creado por Sebastián Vasquez
+          ✨ Created by Sebastián Vasquez
         </a>
         <a href="https://github.com/sebastianvasquezechavarria1234/gallery-slider" target="_blank" rel="noopener noreferrer" className="credit-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10H4V5z"/>
+            <path d="M2 17h20"/>
+            <path d="M6 20h12"/>
           </svg>
-          Ver código fuente
+          View source code
         </a>
       </div>
     </div>
