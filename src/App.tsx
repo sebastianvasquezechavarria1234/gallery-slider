@@ -9,16 +9,14 @@ const SLIDES = [
 ]
 
 const SLIDE_DURATION = 5000
-const TRANSITION_DURATION = 1.0
+const TRANSITION_DURATION = 1.4
 const DRAG_THRESHOLD = 60
 
 export default function App() {
   const [current, setCurrent] = useState(0)
   const isTransitioning = useRef(false)
-  const containerRef = useRef<HTMLDivElement>(null)
   const outRef = useRef<HTMLDivElement>(null)
   const inRef = useRef<HTMLDivElement>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const dragStart = useRef<{ x: number; y: number } | null>(null)
@@ -31,108 +29,57 @@ export default function App() {
 
     const outEl = outRef.current
     const inEl = inRef.current
-    const overlayEl = overlayRef.current
-    if (!outEl || !inEl || !overlayEl) return
-
-    const direction = index > current ? -1 : 1
+    if (!outEl || !inEl) return
 
     const tl = gsap.timeline({
       onComplete: () => {
         setCurrent(index)
         gsap.set(outEl, { clearProps: 'all' })
-        gsap.set(inEl, { clearProps: 'all' })
-        gsap.set(overlayEl, { clearProps: 'all' })
-        gsap.set(containerRef.current, { clearProps: 'filter' })
         isTransitioning.current = false
       },
     })
 
-    // ── Reset positions ──
+    // Reset incoming
     gsap.set(inEl, {
-      x: `${direction * 100}%`,
-      scale: 1.05,
-      filter: 'blur(12px)',
-      opacity: 0.7,
+      opacity: 0,
+      scale: 1,
+      filter: 'blur(0px)',
     })
 
-    gsap.set(outEl, { zIndex: 1 })
-    gsap.set(inEl, { zIndex: 2 })
-
-    // ── Phase 1: WHIP — fast exit + enter ──
+    // Outgoing: scale up + blur + fade
     tl.to(outEl, {
       duration: TRANSITION_DURATION,
-      x: `${direction * -100}%`,
-      scale: 1.08,
-      filter: 'blur(14px)',
-      opacity: 0.3,
-      ease: 'power3.in',
+      scale: 1.3,
+      filter: 'blur(20px)',
+      opacity: 0,
+      ease: 'power2.inOut',
     })
 
+    // Incoming: fade in
     tl.to(
       inEl,
       {
-        duration: TRANSITION_DURATION,
-        x: '0%',
-        filter: 'blur(0px)',
+        duration: TRANSITION_DURATION * 0.7,
         opacity: 1,
-        scale: 1,
-        ease: 'power3.out',
+        ease: 'power2.out',
       },
-      `<0.05`
+      `-=${TRANSITION_DURATION * 0.5}`
     )
-
-    // ── Phase 2: Dark overlay sweep ──
-    gsap.set(overlayEl, {
-      opacity: 0,
-      background: `linear-gradient(${direction > 0 ? '90deg' : '270deg'},
-        transparent 0%,
-        rgba(0,0,0,0.6) 50%,
-        transparent 100%)`,
-    })
-
-    tl.to(overlayEl, {
-      duration: TRANSITION_DURATION * 0.5,
-      opacity: 1,
-      ease: 'power2.in',
-    }, `<0.1`)
-
-    tl.to(overlayEl, {
-      duration: TRANSITION_DURATION * 0.5,
-      opacity: 0,
-      ease: 'power2.out',
-    })
-
-    // ── Phase 3: Camera shake at impact ──
-    const shakeTimeline = gsap.timeline()
-    const shakeAmount = 4
-    const shakeCount = 6
-
-    for (let i = 0; i < shakeCount; i++) {
-      const power = shakeAmount * (1 - i / shakeCount)
-      shakeTimeline.to(containerRef.current, {
-        duration: 0.04,
-        x: (i % 2 === 0 ? power : -power),
-        y: (i % 3 === 0 ? power * 0.5 : -power * 0.5),
-        ease: 'none',
-      })
-    }
-    shakeTimeline.to(containerRef.current, {
-      duration: 0.04,
-      x: 0,
-      y: 0,
-      ease: 'none',
-    })
-
-    tl.add(shakeTimeline, TRANSITION_DURATION * 0.3)
   }, [current])
+
+  const goNext = useCallback(() => {
+    goTo((current + 1) % SLIDES.length)
+  }, [current, goTo])
+
+  const goPrev = useCallback(() => {
+    goTo((current - 1 + SLIDES.length) % SLIDES.length)
+  }, [current, goTo])
 
   // Auto-play
   useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      goTo((current + 1) % SLIDES.length)
-    }, SLIDE_DURATION)
+    timerRef.current = setTimeout(goNext, SLIDE_DURATION)
     return () => clearTimeout(timerRef.current)
-  }, [current, goTo])
+  }, [current, goNext])
 
   // ─── Drag ───
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -157,10 +104,10 @@ export default function App() {
 
     const progress = dx / window.innerWidth
     gsap.set(el, {
-      x: `${progress * 80}%`,
-      scale: 1 - Math.abs(progress) * 0.06,
-      filter: `blur(${Math.abs(progress) * 10}px)`,
-      opacity: 1 - Math.abs(progress) * 0.3,
+      x: `${progress * 60}%`,
+      scale: 1 + Math.abs(progress) * 0.3,
+      filter: `blur(${Math.abs(progress) * 20}px)`,
+      opacity: 1 - Math.abs(progress) * 0.6,
     })
   }, [])
 
@@ -178,7 +125,7 @@ export default function App() {
           scale: 1,
           filter: 'blur(0px)',
           opacity: 1,
-          ease: 'elastic.out(1, 0.75)',
+          ease: 'power2.out',
         })
       }
 
@@ -188,18 +135,13 @@ export default function App() {
       }
       isDragging.current = false
 
-      const next =
-        dx < 0
-          ? (current + 1) % SLIDES.length
-          : (current - 1 + SLIDES.length) % SLIDES.length
-      goTo(next)
+      dx < 0 ? goNext() : goPrev()
     },
-    [current, goTo]
+    [goNext, goPrev]
   )
 
   return (
     <div
-      ref={containerRef}
       className="slider-root"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -228,22 +170,51 @@ export default function App() {
         />
       </div>
 
-      {/* Dark sweep overlay */}
-      <div ref={overlayRef} className="sweep-overlay" />
-
       {/* Vignette */}
       <div className="vignette" />
 
-      {/* Dots */}
-      <div className="dots">
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            className={`dot ${i === current ? 'active' : ''}`}
-            onClick={() => goTo(i)}
-            aria-label={`Slide ${i + 1}`}
-          />
-        ))}
+      {/* Preview bar */}
+      <div className="preview-bar">
+        <button className="nav-arrow" onClick={goPrev} aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        <div className="preview-cards">
+          {SLIDES.map((slide, i) => (
+            <button
+              key={i}
+              className={`preview-card ${i === current ? 'active' : ''}`}
+              onClick={() => goTo(i)}
+              aria-label={`Slide ${i + 1}`}
+            >
+              <img src={slide.src} alt="" draggable={false} />
+              <span className="preview-number">{String(i + 1).padStart(2, '0')}</span>
+            </button>
+          ))}
+        </div>
+
+        <button className="nav-arrow" onClick={goNext} aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Credits */}
+      <div className="credits">
+        <a href="#" className="credit-btn">
+          <span>⭐</span> Creado por Sebastián Vasquez
+        </a>
+        <a href="https://github.com/sebastianvasquezechavarria1234/gallery-slider" target="_blank" rel="noopener noreferrer" className="credit-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          Ver código fuente
+        </a>
       </div>
     </div>
   )
