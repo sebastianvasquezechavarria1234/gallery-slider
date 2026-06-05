@@ -34,18 +34,6 @@ html, body, #app {
   object-fit: cover;
 }
 
-/* ─── Dark radial gradient overlay ─── */
-.slide-gradient {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.2) 0%,
-    rgba(0, 0, 0, 0.75) 100%
-  );
-}
-
 /* ─── Vignette ─── */
 .vignette {
   position: absolute;
@@ -85,7 +73,7 @@ html, body, #app {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  width: 41px;
   height: 100%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);
