@@ -36,30 +36,18 @@ html, body, #app {
   will-change: transform;
 }
 
-/* ─── Ken Burns (on img to avoid GSAP conflicts) ─── */
-.kb-left img  { animation: kenBurnsLeft  5s linear infinite; }
-.kb-right img { animation: kenBurnsRight 5s linear infinite; }
-.kb-up img    { animation: kenBurnsUp    5s linear infinite; }
-.kb-down img  { animation: kenBurnsDown  5s linear infinite; }
+/* ─── Ken Burns ─── */
+.kb-left img  { animation: kenBurnsLeft  7s ease-in-out infinite alternate; }
+.kb-right img { animation: kenBurnsRight 7s ease-in-out infinite alternate; }
+.kb-up img    { animation: kenBurnsUp    7s ease-in-out infinite alternate; }
+.kb-down img  { animation: kenBurnsDown  7s ease-in-out infinite alternate; }
 
-/* ─── Light leak overlay ─── */
-.light-leak {
+/* ─── Sweep overlay ─── */
+.sweep-overlay {
   position: absolute;
   inset: 0;
-  z-index: 15;
+  z-index: 5;
   pointer-events: none;
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(255, 180, 80, 0.08) 15%,
-    rgba(255, 220, 160, 0.25) 30%,
-    rgba(255, 255, 255, 0.5) 45%,
-    rgba(255, 200, 120, 0.3) 60%,
-    rgba(255, 140, 60, 0.1) 80%,
-    transparent 100%
-  );
-  opacity: 0;
-  mix-blend-mode: screen;
 }
 
 /* ─── Vignette ─── */
@@ -70,8 +58,8 @@ html, body, #app {
   pointer-events: none;
   background: radial-gradient(
     ellipse at center,
-    transparent 40%,
-    rgba(0, 0, 0, 0.5) 100%
+    transparent 30%,
+    rgba(0, 0, 0, 0.6) 100%
   );
 }
 
@@ -83,31 +71,36 @@ html, body, #app {
   transform: translateX(-50%);
   z-index: 30;
   display: flex;
-  gap: 0.75rem;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
-  background: transparent;
+  border: none;
+  background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dot:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.8);
-  transform: scale(1.2);
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.3);
 }
 
 .dot.active {
   width: 28px;
-  border-radius: 5px;
+  height: 8px;
+  border-radius: 4px;
   background: #fff;
-  border-color: #fff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
 /* ═══════════════════════════════════
@@ -115,25 +108,21 @@ html, body, #app {
    ═══════════════════════════════════ */
 
 @keyframes kenBurnsLeft {
-  0%   { transform: scale(1.05) translate(0%, 0%); }
-  50%  { transform: scale(1.1)  translate(-2%, -0.5%); }
-  100% { transform: scale(1.05) translate(0%, 0%); }
+  0%   { transform: scale(1.03) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-2%, -0.5%); }
 }
 
 @keyframes kenBurnsRight {
-  0%   { transform: scale(1.05) translate(0%, 0%); }
-  50%  { transform: scale(1.1)  translate(2%, 0.5%); }
-  100% { transform: scale(1.05) translate(0%, 0%); }
+  0%   { transform: scale(1.03) translate(0, 0); }
+  100% { transform: scale(1.08) translate(2%, 0.5%); }
 }
 
 @keyframes kenBurnsUp {
-  0%   { transform: scale(1.05) translate(0%, 0%); }
-  50%  { transform: scale(1.1)  translate(0.5%, -2%); }
-  100% { transform: scale(1.05) translate(0%, 0%); }
+  0%   { transform: scale(1.03) translate(0, 0); }
+  100% { transform: scale(1.08) translate(0.5%, -2%); }
 }
 
 @keyframes kenBurnsDown {
-  0%   { transform: scale(1.05) translate(0%, 0%); }
-  50%  { transform: scale(1.1)  translate(-0.5%, 2%); }
-  100% { transform: scale(1.05) translate(0%, 0%); }
+  0%   { transform: scale(1.03) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-0.5%, 2%); }
 }

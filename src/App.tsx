@@ -9,15 +9,16 @@ const SLIDES = [
 ]
 
 const SLIDE_DURATION = 5000
-const TRANSITION_DURATION = 1.6
-const DRAG_THRESHOLD = 80
+const TRANSITION_DURATION = 1.0
+const DRAG_THRESHOLD = 60
 
 export default function App() {
   const [current, setCurrent] = useState(0)
   const isTransitioning = useRef(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const outRef = useRef<HTMLDivElement>(null)
   const inRef = useRef<HTMLDivElement>(null)
-  const lightLeakRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const dragStart = useRef<{ x: number; y: number } | null>(null)
@@ -30,74 +31,99 @@ export default function App() {
 
     const outEl = outRef.current
     const inEl = inRef.current
-    const leakEl = lightLeakRef.current
-    if (!outEl || !inEl || !leakEl) return
+    const overlayEl = overlayRef.current
+    if (!outEl || !inEl || !overlayEl) return
 
-    const direction = index > current ? 1 : -1
+    const direction = index > current ? -1 : 1
 
     const tl = gsap.timeline({
       onComplete: () => {
         setCurrent(index)
         gsap.set(outEl, { clearProps: 'all' })
+        gsap.set(inEl, { clearProps: 'all' })
+        gsap.set(overlayEl, { clearProps: 'all' })
+        gsap.set(containerRef.current, { clearProps: 'filter' })
         isTransitioning.current = false
       },
     })
 
-    // Incoming: start off-screen with parallax offset
+    // ── Reset positions ──
     gsap.set(inEl, {
-      opacity: 0,
-      scale: 1.08,
-      y: direction * 30,
-      filter: 'blur(8px)',
+      x: `${direction * 100}%`,
+      scale: 1.05,
+      filter: 'blur(12px)',
+      opacity: 0.7,
     })
 
-    // Light leak: reset
-    gsap.set(leakEl, {
-      opacity: 0,
-      x: direction > 0 ? '-100%' : '100%',
-    })
+    gsap.set(outEl, { zIndex: 1 })
+    gsap.set(inEl, { zIndex: 2 })
 
-    // ── Phase 1: Outgoing fades & blurs ──
+    // ── Phase 1: WHIP — fast exit + enter ──
     tl.to(outEl, {
-      duration: TRANSITION_DURATION * 0.7,
-      scale: 1.06,
-      filter: 'blur(6px) saturate(0.3)',
-      opacity: 0,
-      ease: 'power2.in',
+      duration: TRANSITION_DURATION,
+      x: `${direction * -100}%`,
+      scale: 1.08,
+      filter: 'blur(14px)',
+      opacity: 0.3,
+      ease: 'power3.in',
     })
 
-    // ── Phase 2: Light leak sweeps across ──
-    tl.to(
-      leakEl,
-      {
-        duration: TRANSITION_DURATION * 0.5,
-        opacity: 1,
-        x: '0%',
-        ease: 'power2.inOut',
-      },
-      `-=${TRANSITION_DURATION * 0.55}`
-    )
-
-    tl.to(leakEl, {
-      duration: TRANSITION_DURATION * 0.5,
-      opacity: 0,
-      x: direction > 0 ? '100%' : '-100%',
-      ease: 'power2.out',
-    })
-
-    // ── Phase 3: Incoming resolves ──
     tl.to(
       inEl,
       {
-        duration: TRANSITION_DURATION * 0.8,
+        duration: TRANSITION_DURATION,
+        x: '0%',
+        filter: 'blur(0px)',
         opacity: 1,
         scale: 1,
-        y: 0,
-        filter: 'blur(0px) saturate(1)',
         ease: 'power3.out',
       },
-      `-=${TRANSITION_DURATION * 0.8}`
+      `<0.05`
     )
+
+    // ── Phase 2: Dark overlay sweep ──
+    gsap.set(overlayEl, {
+      opacity: 0,
+      background: `linear-gradient(${direction > 0 ? '90deg' : '270deg'},
+        transparent 0%,
+        rgba(0,0,0,0.6) 50%,
+        transparent 100%)`,
+    })
+
+    tl.to(overlayEl, {
+      duration: TRANSITION_DURATION * 0.5,
+      opacity: 1,
+      ease: 'power2.in',
+    }, `<0.1`)
+
+    tl.to(overlayEl, {
+      duration: TRANSITION_DURATION * 0.5,
+      opacity: 0,
+      ease: 'power2.out',
+    })
+
+    // ── Phase 3: Camera shake at impact ──
+    const shakeTimeline = gsap.timeline()
+    const shakeAmount = 4
+    const shakeCount = 6
+
+    for (let i = 0; i < shakeCount; i++) {
+      const power = shakeAmount * (1 - i / shakeCount)
+      shakeTimeline.to(containerRef.current, {
+        duration: 0.04,
+        x: (i % 2 === 0 ? power : -power),
+        y: (i % 3 === 0 ? power * 0.5 : -power * 0.5),
+        ease: 'none',
+      })
+    }
+    shakeTimeline.to(containerRef.current, {
+      duration: 0.04,
+      x: 0,
+      y: 0,
+      ease: 'none',
+    })
+
+    tl.add(shakeTimeline, TRANSITION_DURATION * 0.3)
   }, [current])
 
   // Auto-play
@@ -108,7 +134,7 @@ export default function App() {
     return () => clearTimeout(timerRef.current)
   }, [current, goTo])
 
-  // ─── Drag handlers ───
+  // ─── Drag ───
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (isTransitioning.current) return
     dragStart.current = { x: e.clientX, y: e.clientY }
@@ -131,9 +157,10 @@ export default function App() {
 
     const progress = dx / window.innerWidth
     gsap.set(el, {
-      x: dx * 0.4,
-      scale: 1 - Math.abs(progress) * 0.04,
-      filter: `blur(${Math.abs(progress) * 6}px) saturate(${1 - Math.abs(progress) * 0.5})`,
+      x: `${progress * 80}%`,
+      scale: 1 - Math.abs(progress) * 0.06,
+      filter: `blur(${Math.abs(progress) * 10}px)`,
+      opacity: 1 - Math.abs(progress) * 0.3,
     })
   }, [])
 
@@ -147,9 +174,10 @@ export default function App() {
       if (el && !isTransitioning.current) {
         gsap.to(el, {
           duration: 0.5,
-          x: 0,
+          x: '0%',
           scale: 1,
-          filter: 'blur(0px) saturate(1)',
+          filter: 'blur(0px)',
+          opacity: 1,
           ease: 'elastic.out(1, 0.75)',
         })
       }
@@ -171,6 +199,7 @@ export default function App() {
 
   return (
     <div
+      ref={containerRef}
       className="slider-root"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -190,7 +219,7 @@ export default function App() {
       <div
         ref={inRef}
         className="slider-slide"
-        style={{ zIndex: 10, pointerEvents: 'none' }}
+        style={{ pointerEvents: 'none' }}
       >
         <img
           src={SLIDES[(current + 1) % SLIDES.length].src}
@@ -199,8 +228,8 @@ export default function App() {
         />
       </div>
 
-      {/* Light leak overlay */}
-      <div ref={lightLeakRef} className="light-leak" />
+      {/* Dark sweep overlay */}
+      <div ref={overlayRef} className="sweep-overlay" />
 
       {/* Vignette */}
       <div className="vignette" />
